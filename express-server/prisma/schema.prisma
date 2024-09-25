@@ -7,5 +7,24 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:../database.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  todos     todos[]
+}
+
+model todos {
+  id       Int     @id @default(autoincrement())
+  name     String
+  content  String
+  done     Boolean @default(false)
+  authorId Int
+  author   User    @relation(fields: [authorId], references: [id])
 }
