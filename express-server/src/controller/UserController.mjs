@@ -3,16 +3,18 @@ import prisma from "../config/PrismaClient.mjs";
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    console.log(req.body);
     if (!name && !email && !password) {
       return res
         .status(400)
         .send({ error: "please fill in the blanks the correct answer" });
     }
-    const userExist = prisma.user.findUnique({
+    const userExist = await prisma.user.findUnique({
       where: {
         email: email,
       },
     });
+    console.log(userExist);
 
     if (userExist) {
       return res.status(400).send({ error: "user already exist" });
@@ -25,9 +27,10 @@ export const registerUser = async (req, res) => {
         password: password,
       },
     });
+    console.log("user created");
 
-    res.session.isLoggedIn = true;
-    res.session.user = newUser.id;
+    req.session.isLoggedIn = true;
+    req.session.user = newUser.id;
   } catch (error) {
     console.log(error);
   }
@@ -35,6 +38,8 @@ export const registerUser = async (req, res) => {
 
 export const userLogin = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
+
   if (!email && !password) {
     return res.status(400).send({ error: "email or password is required" });
   }
@@ -43,6 +48,7 @@ export const userLogin = async (req, res) => {
       email: email,
     },
   });
+  console.log(user);
 
   if (!user) {
     return res.status(400).send({ error: "Invalid Email" });
@@ -51,8 +57,9 @@ export const userLogin = async (req, res) => {
   if (password != user.password) {
     return res.status(400).send({ error: "Invalid Email" });
   }
-  res.session.isLoggedIn = true;
-  res.session.user = user.id;
+  req.session.isLoggedIn = true;
+  req.session.user = user.id;
+  return res.status(200).send({message: "you are now logged in"})
 };
 
 export const userLogout = (req, res) => {
@@ -60,7 +67,7 @@ export const userLogout = (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.redirect("/login");
+      res.status(200).send({message: "session is terminated"});
     }
   });
 };
