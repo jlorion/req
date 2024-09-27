@@ -31,6 +31,7 @@ export const registerUser = async (req, res) => {
 
     req.session.isLoggedIn = true;
     req.session.user = newUser.id;
+    res.status(200).send({message: "succesfull"})
   } catch (error) {
     console.log(error);
   }

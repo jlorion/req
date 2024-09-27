@@ -22,7 +22,6 @@ model User {
 
 model todos {
   id       Int     @id @default(autoincrement())
-  name     String
   content  String
   done     Boolean @default(false)
   authorId Int

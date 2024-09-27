@@ -21,7 +21,7 @@ export const getTodo = async (req, res)=>{
 //newTodo
 export const newTodo = async (req, res)=>{
     const {user}  = req.session;
-    const {name, content, done} = req.body;
+    const {content, done} = req.body;
     console.log(req.body)
 
     if (!user) {
@@ -30,7 +30,6 @@ export const newTodo = async (req, res)=>{
 
     const todo = await prisma.todos.create({
         data: {
-            name: name,
             content: content,
             done: done,
             authorId: user
@@ -38,11 +37,12 @@ export const newTodo = async (req, res)=>{
     });
     console.log("todo created");
     
-    return res.status(200).send({message: "todo created"})
+    return res.status(200).send({message: "todo created", todoId: todo.id})
 }
 
 //updateTodo
 export const updateTodo = async (req, res)=>{
+    console.log(req.session.user)
     if (!req.session.user) {
         return res.status(400).send({error: "not logged in"})
         
@@ -53,10 +53,8 @@ export const updateTodo = async (req, res)=>{
         where: {
             id: todoId
         }
-    });
-    console.log(getExistingTodo);
+    }).catch(err => console.log(err));
 
-    const name = req.body.name? req.body.name: getExistingTodo.name;
     const content = req.body.content? req.body.content: getExistingTodo.content;
     const done = typeof req.body.done === undefined? getExistingTodo.done: req.body.done;
 
@@ -65,7 +63,6 @@ export const updateTodo = async (req, res)=>{
             id: todoId
         },
         data: {
-            name: name,
             content: content,
             done: done,
         }
@@ -79,17 +76,25 @@ export const updateTodo = async (req, res)=>{
 
 //deleteTodo
 export const removeTodo = async(req, res)=>{
+    console.log(req.params)
     if (!req.session.user) {
+        console.log(req.session.user)
         return res.status(400).send({error: "not logged in"})
+    }
+    try {
+        const {id} = req.params
+        const deleteTodo = await prisma.todos.delete({
+            where:{
+                id: parseInt(id)
+            }
+        });
+        console.log(`${id} todo is removed`)
+        res.status(200).send({message: "todo is removed"});
+        
+    } catch (error) {
+        console.log(error)
         
     }
-    const {id} = req.body
-    const deleteTodo = await prisma.todos.delete({
-        where:{
-            id: id
-        }
-    });
-    res.status(200).send({message: "todo is removed"});
 
     
 }
